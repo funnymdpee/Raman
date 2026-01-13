@@ -14,15 +14,11 @@ import pandas as pd
 # ==== Imports ====
 # from model.rrcdnet_right import RRCDNet
 # from model.rrcdnet_left import RRCDNet_Left
-# from model.rrcdnet_s4 import RRCDNet_S4
-# from model.rrcdnet_s4_left import RRCDNet_S4_Left
 # from model.dncnn import DnCNN
 # from model.dncnn_cnn import DnCNN_CNN
 # from model.dncnn_dilation import DnCNN_Dilation
-# from model.fbnet import BigNet, create_BigNet
-# from model.lkdnet import LKDNet, create_LKDNet
-# from model.dncnn_s4 import DnCNN_S4
 from model.unet import UNet1D_Denoise
+from model.rapunet import RAPUNet
 
 from dataset import RamanSynthDataset
 from utils import set_seed
@@ -237,7 +233,7 @@ def custom(model, epochs=100):
         epochs=epochs,
         lr=1e-4,
         batch_size=32,
-        resume_path="checkpoints/UNet1D_Denoise_2026-01-13_06-27-21/epoch076.pt",
+        #resume_path="checkpoints/UNet1D_Denoise_2026-01-13_06-27-21/epoch076.pt",
         ckpt_dir=None  # 自动生成目录
     )
 
@@ -247,5 +243,5 @@ def custom(model, epochs=100):
 # =========================================================
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = UNet1D_Denoise().to(device)
-    custom(model=model, epochs=500)
+    model = RAPUNet().to(device)
+    custom(model=model, epochs=300)

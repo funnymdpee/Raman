@@ -110,10 +110,10 @@ def evaluate(clean,noisy,denoised):
 
 
 def main():
-    ckpt = torch.load("checkpoints/UNet1D_Denoise_2026-01-12_17-52-31/best.pt", map_location='cpu')
+    ckpt = torch.load("checkpoints/dncnn/rrcd_best.pt", map_location='cpu')
     #D:\Code\Raman_scatter\RRCDNet\checkpoints\DnCNN_2026-01-11_09-38-15
     #D:\Code\Raman_scatter\RRCDNet\checkpoints\LKDNet_2026-01-11_11-53-50
-    model = UNet1D_Denoise().eval()
+    model = DnCNN().eval()
     model.load_state_dict(ckpt['model_state'])
 
 
