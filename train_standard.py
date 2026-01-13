@@ -1,7 +1,7 @@
 import os
 import sys
 import datetime
-sys.path.append("D:\\Code\\Raman_scatter\\RRCDNet\\s4")
+sys.path.append(".\\s4")
 
 import torch
 import torch.nn as nn
