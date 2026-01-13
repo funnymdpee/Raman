@@ -237,7 +237,7 @@ def custom(model, epochs=100):
         epochs=epochs,
         lr=1e-4,
         batch_size=32,
-        #resume_path="D:/Code/Raman_scatter/RRCDNet/checkpoints/UNet1D_Denoise_2026-01-12_17-52-31/epoch144.pt",
+        resume_path="checkpoints/UNet1D_Denoise_2026-01-13_06-27-21/epoch076.pt",
         ckpt_dir=None  # 自动生成目录
     )
 
