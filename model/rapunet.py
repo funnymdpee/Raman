@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchinfo import summary
 
 
 # ==========================================
@@ -228,8 +229,8 @@ class RAPUNet(nn.Module):
 
 # 简单测试代码
 if __name__ == '__main__':
-    model = AdvancedUNet1D(in_ch=1, base_ch=32)
-    dummy_input = torch.randn(8, 1, 1024)  # Batch=8, Channel=1, Length=1024
-    output = model(dummy_input)
-    print("Input shape:", dummy_input.shape)
-    print("Output shape:", output.shape)
+    model = RAPUNet(in_ch=1, base_ch=32)
+    summary(model, input_size=(1, 1, 10000))
+    x = torch.random(1,1,10000)
+    y = model(x)
+    print(y.shape)

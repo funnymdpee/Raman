@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.utils.checkpoint as checkpoint
 from timm.layers import DropPath
+from torchinfo import summary
 
 
 # ------------------- 基础构件 -------------------
