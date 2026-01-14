@@ -31,13 +31,14 @@ from utils import set_seed
 def train_one_epoch(model, loader, optimizer, device):
     model.train()
     total_loss = 0.0
-    criterion = nn.MSELoss()
+    # criterion = nn.MSELoss()
+    criterion = HybridLoss(grad_weight=0.3).to(device)
 
     for y_batch, x_batch in tqdm(loader, desc="Train", leave=False):
         y, x = y_batch.to(device), x_batch.to(device)
         optimizer.zero_grad()
         pred = model(y)
-        loss = criterion(pred, x)
+        loss, mse_val, grad_val = criterion(pred, x)
         loss.backward()
         optimizer.step()
         total_loss += loss.item() * y.size(0)
@@ -48,13 +49,12 @@ def train_one_epoch(model, loader, optimizer, device):
 def eval_one_epoch(model, loader, device):
     model.eval()
     total_loss = 0.0
-    criterion = nn.MSELoss()
+    criterion = HybridLoss(grad_weight=0.3).to(device)
 
     with torch.no_grad():
         for y_batch, x_batch in loader:
             y, x = y_batch.to(device), x_batch.to(device)
-            residual = model(y)
-            pred = y - residual
+            pred = model(y)
             loss = criterion(pred, x)
             total_loss += loss.item() * y.size(0)
 
@@ -216,13 +216,12 @@ def train_model(
 # =========================================================
 def main():
     """默认训练入口（论文复现）"""
-    model = DnCNN_S4()
+    model = UNet1D_Denoise()
     train_model(
         model=model,
         epochs=200,
         lr=3e-4,
-        batch_size=32,
-        resume_path="checkpoints/dncnn_s4/rrcd_epoch100.pt"
+        batch_size=32
     )
 
 
@@ -242,6 +241,7 @@ def custom(model, epochs=100):
 # ✅ Entry
 # =========================================================
 if __name__ == "__main__":
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = RAPUNet().to(device)
-    custom(model=model, epochs=300)
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # model = RAPUNet().to(device)
+    # custom(model=model, epochs=300)
+    main()
