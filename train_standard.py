@@ -31,8 +31,7 @@ from utils import set_seed
 def train_one_epoch(model, loader, optimizer, device):
     model.train()
     total_loss = 0.0
-    # criterion = nn.MSELoss()
-    criterion = HybridLoss(alpha=0.3).cuda() 
+    criterion = nn.MSELoss()
 
     for y_batch, x_batch in tqdm(loader, desc="Train", leave=False):
         y, x = y_batch.to(device), x_batch.to(device)
