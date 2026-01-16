@@ -32,13 +32,13 @@ def train_one_epoch(model, loader, optimizer, device):
     model.train()
     total_loss = 0.0
     # criterion = nn.MSELoss()
-    criterion = HybridLoss(grad_weight=0.3).to(device)
+    criterion = HybridLoss(grad_weight=0).to(device)
 
     for y_batch, x_batch in tqdm(loader, desc="Train", leave=False):
         y, x = y_batch.to(device), x_batch.to(device)
         optimizer.zero_grad()
         pred = model(y)
-        loss, mse_val, grad_val = criterion(pred, x)
+        loss = criterion(pred, x)
         loss.backward()
         optimizer.step()
         total_loss += loss.item() * y.size(0)
@@ -49,7 +49,7 @@ def train_one_epoch(model, loader, optimizer, device):
 def eval_one_epoch(model, loader, device):
     model.eval()
     total_loss = 0.0
-    criterion = HybridLoss(grad_weight=0.3).to(device)
+    criterion = HybridLoss(grad_weight=0).to(device)
 
     with torch.no_grad():
         for y_batch, x_batch in loader:
@@ -231,7 +231,7 @@ def custom(model, epochs=100):
         model=model,
         epochs=epochs,
         lr=1e-4,
-        batch_size=32,
+        batch_size=16,
         #resume_path="checkpoints/UNet1D_Denoise_2026-01-13_06-27-21/epoch076.pt",
         ckpt_dir=None  # 自动生成目录
     )
@@ -241,7 +241,6 @@ def custom(model, epochs=100):
 # ✅ Entry
 # =========================================================
 if __name__ == "__main__":
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # model = RAPUNet().to(device)
-    # custom(model=model, epochs=300)
-    main()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = RAPUNet().to(device)
+    custom(model=model, epochs=200)

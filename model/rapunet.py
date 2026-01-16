@@ -211,6 +211,7 @@ class RAPUNet(nn.Module):
         self.outc = nn.Conv1d(base_ch, in_ch, kernel_size=3, padding=1)
 
     def forward(self, x):
+        x_in = x
         x1 = self.inc(x)  # [B, 32, L]
         x2, x1_down = self.down1(x1)  # [B, 64, L/2]
         x3, x2_down = self.down2(x1_down)  # [B, 128, L/4]
@@ -224,15 +225,13 @@ class RAPUNet(nn.Module):
         x = self.up4(x, x1)  # 多加了一层上采样恢复到原始分辨率
 
         residual = self.outc(x)
-        return x - residual  # 残差学习：输入 + 预测的残差(或去噪后信号，视训练目标而定)
+        return x_in - residual  # 残差学习：输入 + 预测的残差(或去噪后信号，视训练目标而定)
 
 
 # 简单测试代码
 if __name__ == '__main__':
     model = RAPUNet(in_ch=1, base_ch=32)
     summary(model, input_size=(1, 1, 10000))
-    x = torch.random(1,1,10000)
+    x = torch.randn(2, 1, 10000)
     y = model(x)
-    print(y.shape)
 
-#仔细阅读上述的网络，这个网络的涉及初衷是用于一维序列的降噪。但是由于原始数据的稀缺，目前只能使用合成的数据集（干净+白噪）进行训练。与传统cnn相比增幅效果不明显。请问有什么方法可以让它能更有优势吗
