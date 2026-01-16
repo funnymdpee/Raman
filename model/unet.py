@@ -74,6 +74,7 @@ class UNet1D_Denoise(nn.Module):
 
     def forward(self, x):
         # 编码
+        x_in = x
         x1 = self.input(x)
         x2, x_down1 = self.down1(x1)
         x3, x_down2 = self.down2(x_down1)
@@ -89,7 +90,7 @@ class UNet1D_Denoise(nn.Module):
 
         # 输出残差形式
         out = self.output(x)
-        return out  # 残差去噪思想（输出为去噪信号）
+        return x_in - out  # 残差去噪思想（输出为去噪信号）
         # 若希望直接输出噪声估计，可改为 return out
 
 

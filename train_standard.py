@@ -230,8 +230,8 @@ def custom(model, epochs=100):
     train_model(
         model=model,
         epochs=epochs,
-        lr=1e-4,
-        batch_size=16,
+        lr=3e-3,
+        batch_size=32,
         #resume_path="checkpoints/UNet1D_Denoise_2026-01-13_06-27-21/epoch076.pt",
         ckpt_dir=None  # 自动生成目录
     )
@@ -242,5 +242,7 @@ def custom(model, epochs=100):
 # =========================================================
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = UNet1D_Denoise().to(device)
+    custom(model=model, epochs=100)
     model = RAPUNet().to(device)
-    custom(model=model, epochs=200)
+    custom(model=model, epochs=100)

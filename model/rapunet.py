@@ -182,7 +182,7 @@ class UpBlock_ResCBAM(nn.Module):
 
 
 class RAPUNet(nn.Module):
-    def __init__(self, in_ch=1, base_ch=32):  # base_ch 可以稍微改小，因为结构变复杂了
+    def __init__(self, in_ch=1, base_ch=32):
         super().__init__()
 
         # 编码器
@@ -191,21 +191,16 @@ class RAPUNet(nn.Module):
         self.down2 = DownBlock_ResCBAM(base_ch * 2, base_ch * 4)
         self.down3 = DownBlock_ResCBAM(base_ch * 4, base_ch * 8)
 
-        # Bottleneck 使用 ASPP 提取多尺度特征
+        # Bottleneck
         self.bottleneck = ASPP(base_ch * 8, base_ch * 16)
 
-        # 解码器 (注意通道数计算: 上一层输出 + Skip连接)
-        # bottleneck输出 16*base, skip3是 8*base -> 输入 24*base, 输出 8*base
+        # 解码器
         self.up1 = UpBlock_ResCBAM(base_ch * 16 + base_ch * 8, base_ch * 8)
-
-        # up1输出 8*base, skip2是 4*base -> 输入 12*base, 输出 4*base
         self.up2 = UpBlock_ResCBAM(base_ch * 8 + base_ch * 4, base_ch * 4)
+        # 修改处：up3 的输出通道直接调整为 base_ch，准备输出
+        self.up3 = UpBlock_ResCBAM(base_ch * 4 + base_ch * 2, base_ch)
 
-        # up2输出 4*base, skip1是 2*base -> 输入 6*base, 输出 2*base
-        self.up3 = UpBlock_ResCBAM(base_ch * 4 + base_ch * 2, base_ch * 2)
-
-        # inc输出 base, up3输出 2*base -> 输入 3*base, 输出 base
-        self.up4 = UpBlock_ResCBAM(base_ch * 2 + base_ch, base_ch)
+        # 删除 self.up4
 
         # 输出层
         self.outc = nn.Conv1d(base_ch, in_ch, kernel_size=3, padding=1)
@@ -213,25 +208,25 @@ class RAPUNet(nn.Module):
     def forward(self, x):
         x_in = x
         x1 = self.inc(x)  # [B, 32, L]
-        x2, x1_down = self.down1(x1)  # [B, 64, L/2]
-        x3, x2_down = self.down2(x1_down)  # [B, 128, L/4]
-        x4, x3_down = self.down3(x2_down)  # [B, 256, L/8]
+        x2, x1_down = self.down1(x1)  # x2:[B, 64, L], pool:[B, 64, L/2]
+        x3, x2_down = self.down2(x1_down)  # x3:[B, 128, L/2], pool:[B, 128, L/4]
+        x4, x3_down = self.down3(x2_down)  # x4:[B, 256, L/4], pool:[B, 256, L/8]
 
         x_mid = self.bottleneck(x3_down)  # [B, 512, L/8]
 
-        x = self.up1(x_mid, x4)
-        x = self.up2(x, x3)
-        x = self.up3(x, x2)
-        x = self.up4(x, x1)  # 多加了一层上采样恢复到原始分辨率
+        x = self.up1(x_mid, x4)  # -> [B, 256, L/4]
+        x = self.up2(x, x3)  # -> [B, 128, L/2]
+        x = self.up3(x, x2)  # -> [B, 32, L]  (这里融合了 x2)
+
 
         residual = self.outc(x)
-        return x_in - residual  # 残差学习：输入 + 预测的残差(或去噪后信号，视训练目标而定)
+        return x_in - residual
 
 
 # 简单测试代码
 if __name__ == '__main__':
     model = RAPUNet(in_ch=1, base_ch=32)
     summary(model, input_size=(1, 1, 10000))
-    x = torch.randn(2, 1, 10000)
+    x = torch.randn(2, 1, 10000).to(device='cuda')
     y = model(x)
 
