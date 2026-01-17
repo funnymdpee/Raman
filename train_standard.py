@@ -32,7 +32,7 @@ def train_one_epoch(model, loader, optimizer, device):
     model.train()
     total_loss = 0.0
     # criterion = nn.MSELoss()
-    criterion = HybridLoss(grad_weight=0.1).to(device)
+    criterion = HybridLoss().to(device)
 
     for y_batch, x_batch in tqdm(loader, desc="Train", leave=False):
         y, x = y_batch.to(device), x_batch.to(device)
@@ -49,7 +49,7 @@ def train_one_epoch(model, loader, optimizer, device):
 def eval_one_epoch(model, loader, device):
     model.eval()
     total_loss = 0.0
-    criterion = HybridLoss(grad_weight=0).to(device)
+    criterion = HybridLoss().to(device)
 
     with torch.no_grad():
         for y_batch, x_batch in loader:

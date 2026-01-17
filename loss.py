@@ -11,7 +11,7 @@ class HybridLoss(nn.Module):
                          建议从 0.1 或 1.0 开始尝试，观察量级是否平衡。
         """
         super().__init__()
-        self.mse = nn.L1Loss()
+        self.mse = nn.MSELoss()
         self.grad_weight = grad_weight
 
     def forward(self, pred, target):

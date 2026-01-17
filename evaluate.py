@@ -21,6 +21,7 @@ from model.rrcdnet_s4_left import RRCDNet_S4_Left
 from model.fbnet import BigNet,create_BigNet
 from model.lkdnet import create_LKDNet, LKDNet
 from model.unet import UNet1D_Denoise
+from model.rapunet import RAPUNet
 
 from skimage.metrics import structural_similarity as ssim
 
@@ -110,10 +111,10 @@ def evaluate(clean,noisy,denoised):
 
 
 def main():
-    ckpt = torch.load("checkpoints/dncnn/rrcd_best.pt", map_location='cpu')
+    ckpt = torch.load("checkpoints/test/best copy.pt", map_location='cpu')
     #D:\Code\Raman_scatter\RRCDNet\checkpoints\DnCNN_2026-01-11_09-38-15
     #D:\Code\Raman_scatter\RRCDNet\checkpoints\LKDNet_2026-01-11_11-53-50
-    model = DnCNN().eval()
+    model = RAPUNet().eval()
     model.load_state_dict(ckpt['model_state'])
 
 
