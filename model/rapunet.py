@@ -50,15 +50,19 @@ class SpatialAttention(nn.Module):
 # 3. CBAM 模块 (结合通道+空间)
 # ==========================================
 class CBAM(nn.Module):
-    def __init__(self, in_planes, ratio=16, kernel_size=7):
-        super(CBAM, self).__init__()
-        self.ca = ChannelAttention(in_planes, ratio)
-        self.sa = SpatialAttention(kernel_size)
+    def __init__(self, in_planes, ratio=16, kernel_size=7, enable=True):
+        super().__init__()
+        self.enable = enable
+        if enable:
+            self.ca = ChannelAttention(in_planes, ratio)
+            self.sa = SpatialAttention(kernel_size)
 
     def forward(self, x):
+        if not self.enable:
+            return x
         out = x * self.ca(x)
-        result = out * self.sa(out)
-        return result
+        return out * self.sa(out)
+
 
 
 # ==========================================
@@ -108,7 +112,7 @@ class ASPP(nn.Module):
     def __init__(self, in_ch, out_ch):
         super().__init__()
         # 不同的空洞率
-        dilations = [1, 6, 12, 18]
+        dilations = [1, 2, 4, 8]
         self.aspp_blocks = nn.ModuleList()
 
         for d in dilations:
@@ -153,7 +157,7 @@ class DownBlock_ResCBAM(nn.Module):
     def __init__(self, in_ch, out_ch):
         super().__init__()
         self.conv = ResCBAMBlock(in_ch, out_ch)
-        self.pool = nn.MaxPool1d(2)
+        self.pool = nn.Conv1d(out_ch, out_ch, kernel_size=3, stride=2, padding=1)
 
     def forward(self, x):
         x = self.conv(x)
@@ -184,6 +188,9 @@ class UpBlock_ResCBAM(nn.Module):
 class RAPUNet(nn.Module):
     def __init__(self, in_ch=1, base_ch=32):
         super().__init__()
+
+        # 它可以学习如何对原始输入进行缩放或线性变换
+        self.global_shortcut = nn.Conv1d(in_ch, in_ch, kernel_size=1, bias=False)
 
         # 编码器
         self.inc = ResCBAMBlock(in_ch, base_ch)
@@ -220,7 +227,8 @@ class RAPUNet(nn.Module):
 
 
         residual = self.outc(x)
-        return x_in - residual
+        final_out = self.global_shortcut(x_in) - residual
+        return final_out
 
 
 # 简单测试代码
